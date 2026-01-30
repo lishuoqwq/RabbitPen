@@ -1,6 +1,6 @@
 ---
 title: GraphRAG搭建使用
-published: 2026-01-30
+published: 2024-07-30
 pinned: true
 description: GraphRAG的搭建和训练
 tags: [RAG]
@@ -60,4 +60,5 @@ python -m graphrag.query --root ./ragtest --method local "who is Scrooge, and wh
 全局查询
 python -m graphrag.query --root ./ragtest --method global "what are the top themes in this story?"
 ```
+
 
