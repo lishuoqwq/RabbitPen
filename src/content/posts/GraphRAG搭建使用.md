@@ -60,3 +60,4 @@ python -m graphrag.query --root ./ragtest --method local "who is Scrooge, and wh
 全局查询
 python -m graphrag.query --root ./ragtest --method global "what are the top themes in this story?"
 ```
+
