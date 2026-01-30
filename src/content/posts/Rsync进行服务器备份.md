@@ -1,6 +1,6 @@
 ---
 title: rsync进行Linux同步到Windows Server2019服务器备份
-published: 2025-02-17
+published: 2025-04-17
 pinned: true
 description: 记录一次rsync异地备份的过程
 tags: [Linux,Windows,备份]
@@ -8,7 +8,7 @@ category: backup
 author: Bunny
 draft: false
 date: 2025-01-30
-image: [https://picture.whgd.eu.org/file/1737529915890_【哲风壁纸】2025-可爱.png](https://picture.whgd.eu.org/file/1737528308553_【动漫男孩】2024-09-12 16_07_00.png)
+image: https://picture.whgd.eu.org/file/1737528308553_【动漫男孩】2024-09-12 16_07_00.png
 pubDate: 2025-01-30
 ---
 
@@ -364,6 +364,7 @@ timeout /t 3 > nul
 endlocal
 exit /b 0
 ```
+
 
 
 
