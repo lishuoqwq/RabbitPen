@@ -18,53 +18,65 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		LinkPreset.Archive,
 	];
 
-	// 自定义导航栏链接,并且支持多级菜单
-	links.push({
-		name: "链接",
-		url: "/links/",
-		icon: "material-symbols:link",
-
-		// 子菜单
-		children: [
-			{
-				name: "GitHub",
-				url: "https://github.com/CuteLeaf/Firefly",
-				external: true,
-				icon: "fa6-brands:github",
-			},
-			{
-				name: "Bilibili",
-				url: "https://space.bilibili.com/38932988",
-				external: true,
-				icon: "fa6-brands:bilibili",
-			},
-		],
-	});
-
 	// 友链
 	links.push(LinkPreset.Friends);
+
 
 	// 根据配置决定是否添加留言板，在siteConfig关闭pages.guestbook时导航栏不显示留言板
 	if (siteConfig.pages.guestbook) {
 		links.push(LinkPreset.Guestbook);
 	}
 
-	// 关于及其子菜单
+	// 根据配置决定是否添加番组计划，在siteConfig关闭pages.bangumi时导航栏不显示番组计划
+	if (siteConfig.pages.bangumi) {
+		links.push(LinkPreset.Bangumi);
+	}
+
+		// 自定义导航栏链接,并且支持多级菜单
 	links.push({
-		name: "关于",
-		url: "/content/",
-		icon: "material-symbols:info",
+		name: "小工具",
+		url: "/links/",
+		icon: "material-symbols:build",
+
+		// 子菜单
 		children: [
-			// 根据配置决定是否添加赞助，在siteConfig关闭pages.sponsor时导航栏不显示赞助
-			...(siteConfig.pages.sponsor ? [LinkPreset.Sponsor] : []),
-
-			// 关于页面
-			LinkPreset.About,
-
-			// 根据配置决定是否添加番组计划，在siteConfig关闭pages.bangumi时导航栏不显示番组计划
-			...(siteConfig.pages.bangumi ? [LinkPreset.Bangumi] : []),
+			{
+				name: "临时邮件",
+				url: "https://mail.whgd.eu.org/",
+				external: true,
+				icon: "material-symbols:mail-outline",
+			},
+			{
+				name: "图床",
+				url: "https://picture.whgd.eu.org/",
+				external: true,
+				icon: "material-symbols:image-outline",
+			},
+			{
+				name: "拼豆",
+				url: "https://pindou.whgd.eu.org/",
+				external: true,
+				icon: "material-symbols:apps",
+			},
+			{
+				name: "MoonTV",
+				url: "https://moontv.whgd.eu.org/",
+				external: true,
+				icon: "material-symbols:tv-outline",
+			},
+			{
+				name: "订阅转换",
+				url: "https://sublink.whgd.eu.org/",
+				external: true,
+				icon: "material-symbols:sync-alt",
+			},
 		],
 	});
+
+	// 根据配置决定是否添加赞助，在siteConfig关闭pages.sponsor时导航栏不显示赞助
+	if (siteConfig.pages.sponsor) {
+		links.push(LinkPreset.Sponsor);
+	}
 
 	// 仅返回链接，其它导航搜索相关配置在模块顶层常量中独立导出
 	return { links } as NavBarConfig;

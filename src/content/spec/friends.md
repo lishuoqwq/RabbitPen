@@ -10,10 +10,10 @@ description: "与优秀的朋友们一起成长"
 申请友链前请先在自己网站添加本站友链，请使用以下信息：
 
 ```yaml
-站点名称: 夏夜流萤
-站点描述: 飞萤之火自无梦的长夜亮起，绽放在终竟的明天。
-站点链接: https://blog.cuteleaf.cn
-头像链接: https://q1.qlogo.cn/g?b=qq&nk=7618557&s=640
+站点名称: 一只兔
+站点描述: 欲买桂花同载酒，终不似，少年游。
+站点链接: https://whgd.eu.org
+头像链接: https://picture.whgd.eu.org/file/1769758266266_avatar.webp
 
 ```
 
