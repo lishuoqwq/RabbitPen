@@ -1,5 +1,5 @@
 ---
-title: rsync进行Linux同步到Windows Server2019服务器备份
+title: 使用rsync进行Linux同步到Windows Server2019服务器备份
 published: 2025-04-17
 pinned: true
 description: 记录一次rsync异地备份的过程
@@ -364,6 +364,7 @@ timeout /t 3 > nul
 endlocal
 exit /b 0
 ```
+
 
 
 
