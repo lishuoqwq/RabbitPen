@@ -27,6 +27,7 @@ import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import mdx from "@astrojs/mdx";
+import vercel from "@astrojs/vercel";
 import rehypeEmailProtection from "./src/plugins/rehype-email-protection.mjs";
 import rehypeFigure from "./src/plugins/rehype-figure.mjs";
 
@@ -35,6 +36,8 @@ export default defineConfig({
 	site: siteConfig.site_url,
 
 	base: "/",
+	output: "static",
+	adapter: vercel(),
 	trailingSlash: "always",
 	integrations: [
 		tailwind({
