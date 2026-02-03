@@ -32,7 +32,14 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		links.push(LinkPreset.Bangumi);
 	}
 
-		// 自定义导航栏链接,并且支持多级菜单
+	// 上传文章
+	links.push({
+		name: "上传文章",
+		url: "/upload/",
+		icon: "material-symbols:upload-file",
+	});
+
+	// 自定义导航栏链接,并且支持多级菜单
 	links.push({
 		name: "小工具",
 		url: "/links/",

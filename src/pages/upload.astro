@@ -1,0 +1,396 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+
+const repoOwner = import.meta.env.PUBLIC_GITHUB_OWNER ?? "lishuoqwq";
+const repoName = import.meta.env.PUBLIC_GITHUB_REPO ?? "RabbitPen";
+const repoBranch = import.meta.env.PUBLIC_GITHUB_BRANCH ?? "main";
+const repoPath = import.meta.env.PUBLIC_GITHUB_BASE_PATH ?? "src/content/posts";
+---
+
+<MainGridLayout title="上传文章" description="上传 Markdown 并推送到 GitHub 仓库">
+	<div class="upload-shell">
+		<section class="upload-hero card-base">
+			<div class="upload-hero-content">
+				<div class="upload-badge">Markdown 一键推送</div>
+				<h1 class="upload-title">上传文章</h1>
+				<p class="upload-subtitle">将 Markdown 文件上传到你的博客内容目录。</p>
+			</div>
+		</section>
+
+		<div class="upload-grid">
+			<section class="card-base upload-form-card">
+				<h2 class="upload-section-title">选择文件并提交</h2>
+				<form id="upload-form" class="flex flex-col gap-6" enctype="multipart/form-data">
+					<div class="upload-fields-grid">
+						<label class="upload-field">
+							<span class="upload-label">Markdown 文件</span>
+							<span class="file-field">
+								<input
+									id="md-file"
+									name="file"
+									type="file"
+									accept=".md,.mdx"
+									class="file-input"
+									required
+								/>
+								<span class="file-button">选择文件</span>
+								<span class="file-name" data-file-name>未选择任何文件</span>
+							</span>
+						</label>
+
+						<label class="upload-field">
+							<span class="upload-label">上传口令</span>
+							<input
+								id="upload-password"
+								name="password"
+								type="password"
+								placeholder="如果后端配置了口令，请在此输入"
+								class="upload-input"
+							/>
+						</label>
+
+						<label class="upload-field">
+							<span class="upload-label">目标文件名</span>
+							<input
+								id="md-filename"
+								name="filename"
+								type="text"
+								placeholder="例如：我的新文章.md"
+								class="upload-input"
+							/>
+						</label>
+
+						<label class="upload-field">
+							<span class="upload-label">提交信息</span>
+							<input
+								id="commit-message"
+								name="message"
+								type="text"
+								placeholder="例如：chore: 更新文章"
+								class="upload-input"
+							/>
+						</label>
+					</div>
+
+					<div class="upload-actions">
+						<button
+							type="submit"
+							class="btn-regular upload-submit"
+							id="upload-submit"
+						>
+							开始上传
+						</button>
+						<span id="upload-status" class="upload-status"></span>
+					</div>
+				</form>
+
+				<div id="upload-result" class="upload-result"></div>
+			</section>
+		</div>
+	</div>
+</MainGridLayout>
+
+<script>
+	const form = document.getElementById("upload-form");
+	const statusEl = document.getElementById("upload-status");
+	const resultEl = document.getElementById("upload-result");
+	const submitBtn = document.getElementById("upload-submit");
+	const fileInput = document.getElementById("md-file");
+	const fileNameEl = document.querySelector("[data-file-name]");
+
+	const setStatus = (message, tone = "info") => {
+		if (!statusEl) return;
+		statusEl.textContent = message;
+		statusEl.className =
+			tone === "error"
+				? "upload-status is-error"
+				: tone === "success"
+					? "upload-status is-success"
+					: "upload-status";
+	};
+
+	form?.addEventListener("submit", async (event) => {
+		event.preventDefault();
+		if (!(form instanceof HTMLFormElement)) return;
+
+		if (!(fileInput instanceof HTMLInputElement) || !fileInput.files?.length) {
+			setStatus("请先选择 Markdown 文件。", "error");
+			return;
+		}
+
+		const formData = new FormData();
+		formData.append("file", fileInput.files[0]);
+
+		const filename = document.getElementById("md-filename");
+		if (filename instanceof HTMLInputElement && filename.value.trim()) {
+			formData.append("filename", filename.value.trim());
+		}
+
+		const message = document.getElementById("commit-message");
+		if (message instanceof HTMLInputElement && message.value.trim()) {
+			formData.append("message", message.value.trim());
+		}
+
+		const password = document.getElementById("upload-password");
+		if (password instanceof HTMLInputElement && password.value.trim()) {
+			formData.append("password", password.value.trim());
+		}
+
+		try {
+			setStatus("正在上传，请稍候...");
+			if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
+			if (resultEl) resultEl.textContent = "";
+
+			const response = await fetch("/api/upload/", {
+				method: "POST",
+				body: formData,
+			});
+
+			const payload = await response.json();
+			if (!response.ok) {
+				throw new Error(payload?.message || "上传失败");
+			}
+
+			setStatus("上传成功。", "success");
+			if (resultEl) {
+				resultEl.textContent = `已写入 ${payload.path}，提交：${payload.commitSha ?? "未知"}`;
+			}
+			form.reset();
+			if (fileNameEl) {
+				fileNameEl.textContent = "未选择任何文件";
+			}
+		} catch (error) {
+			setStatus(error instanceof Error ? error.message : "上传失败", "error");
+		} finally {
+			if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
+		}
+	});
+
+	if (fileInput instanceof HTMLInputElement && fileNameEl) {
+		fileInput.addEventListener("change", () => {
+			const fileName =
+				fileInput.files && fileInput.files.length > 0
+					? fileInput.files[0].name
+					: "未选择任何文件";
+			fileNameEl.textContent = fileName;
+		});
+	}
+</script>
+
+<style>
+	.upload-shell {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		align-items: center;
+	}
+
+	.upload-hero {
+		padding: 1.85rem 2.2rem;
+		border-radius: var(--radius-large);
+		background: var(--card-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: var(--shadow-sm);
+		width: min(100%, 48rem);
+	}
+
+	.upload-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.85rem;
+		border-radius: 999px;
+		font-size: 0.78rem;
+		font-weight: 600;
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		box-shadow: var(--shadow-sm);
+	}
+
+	:root.dark .upload-badge {
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+	}
+
+	.upload-title {
+		font-size: 1.6rem;
+		font-weight: 700;
+		margin-top: 0.6rem;
+	}
+
+	.upload-subtitle {
+		font-size: 0.95rem;
+		opacity: 0.85;
+		margin-top: 0.6rem;
+	}
+
+	.upload-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+		width: min(100%, 48rem);
+	}
+
+	.upload-form-card {
+		border-radius: var(--radius-large);
+		padding: 1.9rem 2.1rem;
+		border: 1px solid var(--line-divider);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.upload-section-title {
+		font-size: 1.05rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.upload-section-title::before {
+		content: "";
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 999px;
+		background: var(--primary);
+	}
+
+	.upload-fields-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.1rem 1.4rem;
+	}
+
+	.upload-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.upload-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		opacity: 0.8;
+	}
+
+	.upload-input {
+		border-radius: 0.75rem;
+		border: 1px solid var(--line-divider);
+		padding: 0.65rem 0.85rem;
+		background: var(--btn-regular-bg);
+		color: var(--content-meta);
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.upload-input:focus {
+		outline: none;
+		border-color: color-mix(in oklab, var(--primary) 65%, transparent);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
+	}
+
+	.file-field {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: nowrap;
+		border-radius: 0.85rem;
+		border: 1px dashed var(--line-divider);
+		padding: 0.7rem 0.85rem;
+		background: var(--btn-regular-bg);
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.file-field:hover {
+		border-color: color-mix(in oklab, var(--primary) 65%, transparent);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 15%, transparent);
+	}
+
+	.file-input {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.file-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.35rem 0.85rem;
+		border-radius: var(--radius-full);
+		font-size: 0.8rem;
+		font-weight: 600;
+		background: var(--btn-regular-bg-hover);
+		color: var(--btn-content);
+		white-space: nowrap;
+	}
+
+	.file-name {
+		font-size: 0.85rem;
+		opacity: 0.7;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.upload-submit {
+		height: 2.6rem;
+		padding: 0 1.6rem;
+		border-radius: var(--radius-full);
+		font-weight: 600;
+		color: var(--btn-content);
+		box-shadow: var(--shadow-button);
+	}
+
+	.upload-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.4rem;
+	}
+
+	.upload-submit:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		box-shadow: none;
+		transform: none;
+	}
+
+	.upload-status {
+		font-size: 0.85rem;
+		opacity: 0.8;
+	}
+
+	.upload-status.is-success {
+		color: #16a34a;
+		opacity: 1;
+	}
+
+	.upload-status.is-error {
+		color: #dc2626;
+		opacity: 1;
+	}
+
+	.upload-result {
+		margin-top: 1rem;
+		font-size: 0.85rem;
+		opacity: 0.85;
+	}
+
+	@media (max-width: 768px) {
+		.upload-hero {
+			padding: 1.5rem;
+		}
+
+		.upload-form-card {
+			padding: 1.5rem;
+		}
+
+		.upload-fields-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
