@@ -1,6 +1,6 @@
 ---
 title: Git 命令保姆级教程
-published: 2025-02-04
+published: 2026-02-04
 pinned: true
 description: 从零开始学习 Git，涵盖安装、配置、常用命令、分支管理、远程操作等全面内容
 tags: [Git]
@@ -8,7 +8,7 @@ slug: Git
 category: 开发教程
 author: Bunny
 draft: false
-image: https://picture.whgd.eu.org/file/1770209484984_【哲风壁纸】二次元-动漫女孩.mp4
+image: https://picture.whgd.eu.org/file/1770209822177_【哲风壁纸】8k-二次元-动漫.png
 ---
 
 # Git 命令保姆级教程
