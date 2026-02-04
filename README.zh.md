@@ -139,10 +139,21 @@
    pnpm install
    ```
 
-4. **配置博客：**
+4. **配置环境变量（上传文章功能需要）：**
+   - 复制 `example.env` 为 `.env`，并按需填写以下参数：
+   ```bash
+   GITHUB_TOKEN=your_github_token
+   GITHUB_OWNER=your_github_username
+   GITHUB_REPO=RabbitPen
+   GITHUB_BRANCH=main
+   GITHUB_BASE_PATH=src/content/posts
+   UPLOAD_PASSWORD=your_upload_password
+   ```
+
+5. **配置博客：**
    - 编辑 `src/config/` 目录下的配置文件自定义博客设置
 
-5. **启动开发服务器：**
+6. **启动开发服务器：**
    ```bash
    pnpm dev
    ```

@@ -135,10 +135,21 @@ If you have useful features and optimizations, please submit a [Pull Request](ht
    pnpm install
    ```
 
-4. **Configure blog:**
+4. **Set environment variables (required for upload feature):**
+   - Copy `example.env` to `.env`, then fill in the values:
+   ```bash
+   GITHUB_TOKEN=your_github_token
+   GITHUB_OWNER=your_github_username
+   GITHUB_REPO=RabbitPen
+   GITHUB_BRANCH=main
+   GITHUB_BASE_PATH=src/content/posts
+   UPLOAD_PASSWORD=your_upload_password
+   ```
+
+5. **Configure blog:**
    - Edit configuration files in `src/config/` directory to customize blog settings
 
-5. **Start development server:**
+6. **Start development server:**
    ```bash
    pnpm dev
    ```
