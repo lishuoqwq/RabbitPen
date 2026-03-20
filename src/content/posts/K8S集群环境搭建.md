@@ -11,9 +11,11 @@ draft: false
 date: 2026-03-20
 image: [https://picture.whgd.eu.org/file/1737613131026_【哲风壁纸】笑嘻嘻-美女.png](https://picture.whgd.eu.org/file/1773983120958_【哲风壁纸】卡通动物-卡通猫.png)
 pubDate: 2026-03-20
+
 ---
 
-##### 1、本地安装Ollama，下载两个模型
+## Ubuntu Server如何设置静态IP
+
 # 🚀 Ubuntu 三节点 K8s 高可用集群搭建 SOP
 
 ## 📑 节点规划
