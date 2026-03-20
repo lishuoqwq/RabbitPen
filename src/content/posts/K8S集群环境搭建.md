@@ -1,11 +1,11 @@
 ---
-title: K8s 高可用集群搭建
+title: k8s 高可用集群搭建
 published: 2026-03-20
 pinned: true
 description: K8s 高可用集群搭建
-tags: [K8S]
-slug: K8S
-category: K8S
+tags: [k8s]
+slug: k8s
+category: k8s
 author: Bunny
 draft: false
 date: 2026-03-20
@@ -13,7 +13,7 @@ image: https://picture.whgd.eu.org/file/1773983120958_【哲风壁纸】卡通�
 pubDate: 2026-03-20
 ---
 
-# 🚀 Ubuntu 三节点 K8s 高可用集群搭建 SOP
+# 🚀 Ubuntu 三节点 k8s 高可用集群搭建 SOP
 
 ## 📑 节点规划
 
