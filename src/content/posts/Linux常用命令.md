@@ -145,8 +145,8 @@ lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
 
 ```shell
 # 代理Windows的翻墙软件实现下载
-export http_proxy="http://10.135.30.71:7890"
-export https_proxy="https://10.135.30.71:7890"
+export http_proxy="http://10.135.20.153:7890"
+export https_proxy="https://10.135.20.153:7890"
 
 #代理Docker实现翻墙下载Dockerhub仓库拉取
 vim /etc/docker/daemon.json
