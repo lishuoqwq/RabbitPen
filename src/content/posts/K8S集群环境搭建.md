@@ -387,3 +387,515 @@ kubeadm token create --print-join-command
 ⚠️ 极其重要：千万别忘了在末尾加上 cri-dockerd 的尾巴！
 ```
 
+## 🐉 第五阶段：安装 Longhorn
+
+#### 1、环境准备（在【所有 4 个节点】上执行）
+
+##### Longhorn 需要底层操作系统支持 `iSCSI`（用于提供块存储）和 `NFS`（用于提供多读多写存储）。
+
+```sh
+# 1. 更新系统的软件源列表（相当于刷新应用商店）
+sudo apt-get update
+
+# 2. 安装 open-iscsi（Longhorn 核心依赖）和 nfs-common（用于支持多节点共享挂载）
+sudo apt-get install open-iscsi nfs-common -y
+
+# 3. 启动 iscsid 服务，并设置为开机自启
+sudo systemctl enable --now iscsid
+```
+
+#### 2、检查环境（在【Master 节点】执行）
+
+##### Longhorn 官方提供了一个检测脚本，用来帮你检查刚才的环境有没有准备好。
+
+```sh
+# 下载并运行 Longhorn 的环境检查脚本，依赖了 bash 和 jq（如果没有 jq 可能会报错，但如果不报错就说明没问题）
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.6.0/scripts/environment_check.sh | bash
+```
+
+##### *作用*：如果输出结果中所有的 `Status` 都是 `True` 或者没有报明显的红色 `Error`，就可以放心进行下一步了。
+
+```sh
+# 实时查看 longhorn-system 命名空间下所有 Pod（容器）的运行状态
+kubectl get pods -n longhorn-system -w
+```
+
+##### *作用*：`-w` 表示实时监控。你会看到很多组件正在 `ContainerCreating`（拉取镜像创建中）。请耐心等待几分钟，直到所有的 Pod 的状态（STATUS）都变成 **`Running`**。 *(看到全部 Running 后，按 `Ctrl + C` 退出监控)*。
+
+#### 4、暴露并访问 Longhorn 可视化界面（在【Master 节点】执行）
+
+##### Longhorn 自带一个非常漂亮的 Web 界面，但默认情况下它只在集群内部可以访问。我们需要把它暴露出来。对于小白来说，最简单的方法是改成 `NodePort` 模式。
+
+```sh
+# 1. 修改 UI 服务的类型，从默认的 ClusterIP 改为 NodePort（暴露到主机的物理端口上）
+kubectl patch svc longhorn-frontend -n longhorn-system -p '{"spec": {"type": "NodePort"}}'
+
+# 2. 查看系统为你分配了哪个物理端口
+kubectl get svc longhorn-frontend -n longhorn-system
+
+# 3. 修改默认分配的端口
+kubectl patch svc longhorn-frontend -n longhorn-system --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/nodePort", "value": 30880}]'
+```
+
+##### *作用*：执行完第二条命令后，你会看到类似这样的输出： `longhorn-frontend NodePort 10.97.x.x <none> 80:30880/TCP`
+
+##### 请注意看 `80:` 后面的那个五位数（例如上面的 **30880**），这就是你的访问端口。
+
+##### **如何访问：** 打开你的电脑浏览器，输入： `http://<任意一个节点的IP地址>:<刚刚查到的五位数端口>` （例如：`http://10.135.40.150:30880`） 你就能看到 Longhorn 的管理界面了！
+
+#### 5、将 Longhorn 设置为集群的默认存储（在【Master 节点】执行）
+
+##### 为了以后你创建 MySQL、Redis 等需要持久化数据的应用时，Kubernetes 能自动帮你向 Longhorn 要硬盘，我们需要把它设为默认存储。
+
+```sh
+# 给 Longhorn 的 StorageClass 打上“默认”的标记
+kubectl patch storageclass longhorn -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+# 查看是否设置成功
+kubectl get sc
+```
+
+##### *作用*：执行第二条命令后，如果你看到 `longhorn (default)` 字样，说明大功告成！
+
+## 🎉 第六阶段：Docker卷目录迁移至K8S集群
+
+#### 1、在【旧 Docker 服务器】打包老数据
+
+##### 假设你以前 Docker 跑的时候，宿主机上存数据的目录是 `/opt/data/postgres` 和 `/opt/data/minio`
+
+```sh
+# 1. 进入数据所在的父目录
+cd /opt/data
+
+# 3. 把包传到你的 K8s Master 节点
+scp /opt/data root@<新K8s_Master的IP>:/opt/teable_data
+```
+
+#### 2、在 K8s 部署并“断电”
+
+##### 我们要先让 K8s 按照你的 YAML 把 Longhorn 硬盘全自动建出来。
+
+```yaml
+---
+# ==========================================
+# 1. 基础配置层 (保持不变)
+# ==========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teable-config
+  namespace: teable
+data:
+  PUBLIC_ORIGIN: "http://10.135.40.150:30000"
+  
+  # MinIO 存储配置（内外网分离架构）
+  BACKEND_STORAGE_PROVIDER: "minio"
+  BACKEND_STORAGE_PUBLIC_BUCKET: "teable-pub"
+  BACKEND_STORAGE_PRIVATE_BUCKET: "teable-pvt"
+  BACKEND_STORAGE_MINIO_USE_SSL: "false"
+  
+  # 【外部地址】：前端浏览器下载、预览附件时使用的地址
+  BACKEND_STORAGE_MINIO_ENDPOINT: "10.135.40.150"
+  BACKEND_STORAGE_MINIO_PORT: "32000"
+  STORAGE_PREFIX: "http://10.135.40.150:32000"
+  
+  # 【内部地址】：Teable后端容器上传、读写附件时直连的 K8s 内网地址（极速）
+  BACKEND_STORAGE_MINIO_INTERNAL_ENDPOINT: "minio.teable.svc.cluster.local"
+  BACKEND_STORAGE_MINIO_INTERNAL_PORT: "9000"
+  
+  BACKEND_CACHE_PROVIDER: "redis"
+  NEXT_ENV_IMAGES_ALL_REMOTE: "true"
+  PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: "1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: teable-secrets
+  namespace: teable
+type: Opaque
+stringData:
+  PRISMA_DATABASE_URL: "postgresql://teable:teable@postgres.teable.svc.cluster.local:5432/teable"
+  BACKEND_CACHE_REDIS_URI: "redis://@redis.teable.svc.cluster.local:6379/0"
+  BACKEND_JWT_SECRET: "teable-random-jwt-secret-abc123"
+  BACKEND_SESSION_SECRET: "teable-random-session-secret-xyz890"
+  BACKEND_STORAGE_MINIO_ACCESS_KEY: "root"
+  BACKEND_STORAGE_MINIO_SECRET_KEY: "P@ssw0rd"
+
+---
+# ==========================================
+# 2. 数据库层 (PostgreSQL - 升级为 StatefulSet + Longhorn)
+# ==========================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: teable
+spec:
+  serviceName: "postgres"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: registry.cn-shenzhen.aliyuncs.com/teable/postgres:15.4
+          env:
+            - name: POSTGRES_DB
+              value: teable
+            - name: POSTGRES_USER
+              value: teable
+            - name: POSTGRES_PASSWORD
+              value: teable
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+  # 【核心机制】：向 Longhorn 动态申请 10G 虚拟网络磁盘
+  volumeClaimTemplates:
+    - metadata:
+        name: pg-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: teable
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+
+---
+# ==========================================
+# 3. 缓存层 (Redis - 升级为 StatefulSet + Longhorn)
+# ==========================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: teable
+spec:
+  serviceName: "redis"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: registry.cn-shenzhen.aliyuncs.com/teable/redis:7.2.4
+          args: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: teable
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+
+---
+# ==========================================
+# 4. 对象存储层 (MinIO - 升级为 StatefulSet + Longhorn)
+# ==========================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+  namespace: teable
+spec:
+  serviceName: "minio"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: registry.cn-shenzhen.aliyuncs.com/teable/minio:RELEASE.2024-10-13T13-34-11Z-cpuv1
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+          env:
+            - name: MINIO_ROOT_USER
+              value: root
+            - name: MINIO_ROOT_PASSWORD
+              value: P@ssw0rd
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: minio-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: teable
+spec:
+  type: NodePort
+  selector:
+    app: minio
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 32000
+      name: api
+    - port: 9001
+      targetPort: 9001
+      nodePort: 32001
+      name: console
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-setup
+  namespace: teable
+spec:
+  template:
+    spec:
+      containers:
+      - name: minio-mc
+        image: minio/mc:RELEASE.2022-12-13T00-23-28Z
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "等待 MinIO..."
+          until mc alias set teable-minio http://minio:9000 root P@ssw0rd; do sleep 3; done
+          mc mb --ignore-existing teable-minio/teable-pub
+          mc mb --ignore-existing teable-minio/teable-pvt
+          mc anonymous set public teable-minio/teable-pub
+          echo "初始化完成！"
+      restartPolicy: OnFailure
+
+---
+# ==========================================
+# 5. 应用层 (Teable 主程序 - 目前保持 1 副本用于导数据)
+# ==========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teable
+  namespace: teable
+spec:
+  replicas: 1  # 稍后数据导入完毕，我们再横向扩容到 2
+  selector:
+    matchLabels:
+      app: teable
+  template:
+    metadata:
+      labels:
+        app: teable
+    spec:
+      # 【核心新增】：反亲和性，如果有多副本，强制打散到不同物理机
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - teable
+            topologyKey: "kubernetes.io/hostname"
+      initContainers:
+        - name: db-migrate
+          image: registry.cn-shenzhen.aliyuncs.com/teable/teable:latest
+          args: ["migrate-only"]
+          envFrom:
+            - configMapRef:
+                name: teable-config
+            - secretRef:
+                name: teable-secrets
+      containers:
+        - name: teable
+          image: registry.cn-shenzhen.aliyuncs.com/teable/teable:latest
+          args: ["skip-migrate"]
+          ports:
+            - containerPort: 3000
+          # 【新增】跳过自签名证书的验证
+          env:
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
+          envFrom:
+            - configMapRef:
+                name: teable-config
+            - secretRef:
+                name: teable-secrets
+          resources:
+            requests:
+              cpu: 200m
+              memory: 400Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teable
+  namespace: teable
+spec:
+  type: NodePort 
+  selector:
+    app: teable
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30000
+```
+
+```sh
+# 1. 部署你上面发给我的这份完美的 YAML（假设文件名叫 teable.yaml）
+kubectl create namespace teable
+kubectl apply -f teable.yaml
+
+# 2. 等待大概 1-2 分钟，让系统把硬盘建好，并自动初始化一下。
+kubectl get pods -n teable
+# （看到 postgres-0, minio-0, teable 等都变成 Running 后进行下一步）
+
+# 3. 停掉水电！（把组件副本数缩减为 0，相当于关机，防止它们继续往盘里写数据）
+kubectl scale statefulset postgres minio redis -n teable --replicas=0
+kubectl scale deployment teable -n teable --replicas=0
+
+# 4. 确认全部关机了（应该只剩下一个叫 minio-setup 的已完成的 Job）
+kubectl get pods -n teable
+
+# 5. 查看teable分配的pvc硬盘情况
+kubectl get pvc -n teable
+```
+
+##### 因为你用的是 `StatefulSet`，K8s 给硬盘起的代号是固定的：
+
+- ##### Postgres 的硬盘叫：`pg-data-postgres-0`
+
+- ##### MinIO 的硬盘叫：`minio-data-minio-0`
+
+##### 我们建一个临时容器，把这两块盘插进去。 创建一个叫 `helper.yaml` 的文件，复制以下内容并执行 `kubectl apply -f helper.yaml`：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: helper-pod
+  namespace: teable
+spec:
+  containers:
+  - name: helper
+    image: ubuntu:latest
+    command: ["sleep", "infinity"]
+    volumeMounts:
+    # 名字普普通通，直接挂载为 /data/postgres 和 /data/minio
+    - name: pg-vol
+      mountPath: /data/postgres
+    - name: minio-vol
+      mountPath: /data/minio
+  volumes:
+  - name: pg-vol
+    persistentVolumeClaim:
+      claimName: pg-data-postgres-0   # K8s 自动生成的 Postgres 硬盘
+  - name: minio-vol
+    persistentVolumeClaim:
+      claimName: minio-data-minio-0   # K8s 自动生成的 MinIO 硬盘
+```
+
+```sh
+# 执行启动并等待它运行
+kubectl apply -f helper.yaml
+# 确认搬运工启动成功
+kubectl get pod helper-pod -n teable
+```
+
+#### 3、文件夹直传（核心操作）
+
+##### **不用进容器内部！** 我们直接在 K8s Master 宿主机上，用 4 条命令搞定所有操作。
+
+##### 假设你在宿主机上的旧数据目录是 `/opt/data/postgres` 和 `/opt/data/minio`，请直接在 Master 节点终端执行：
+
+```sh
+# 1. 把 K8s 自动生成的空文件打扫干净
+kubectl exec -it helper-pod -n teable -- sh -c "rm -rf /data/postgres/* /data/minio/*"
+
+# 2. 为 Postgres 创建专门的子目录 
+# ⚠️ 必须做这步！因为你的 YAML 里写了 PGDATA: /var/lib/postgresql/data/pgdata
+kubectl exec -it helper-pod -n teable -- mkdir -p /data/postgres/pgdata
+
+# 3. 直接将宿主机的文件夹内容，拷贝到容器的 Longhorn 硬盘里！
+# ⚠️ 注意源路径后面的 "/." 不能漏掉！它代表把里面所有的文件拷过去，而不是把外层文件夹套个娃。
+kubectl cp /opt/teable-data/postgres/_data/. teable/helper-pod:/data/postgres/pgdata/
+kubectl cp /opt/teable-data/minio/_data/. teable/helper-pod:/data/minio/
+
+# 4. 修复数据库权限（Postgres 认死理，必须是 UID 999 才能读写）
+kubectl exec -it helper-pod -n teable -- chown -R 999:999 /data/postgres
+```
+
+##### *(注：`kubectl cp` 传输大量碎文件时可能不会显示进度条，如果终端卡住不要慌，是在传输中，耐心等待执行完毕回到命令行即可。)*
+
+#### 4、清理搬运工，重新通电
+
+##### 数据已经全部完美平移到 Longhorn 硬盘里了！
+
+```sh
+# 1. 删掉搬运工
+kubectl delete pod helper-pod -n teable
+
+# 2. 依次唤醒数据库和存储（恢复为 1 个副本）
+kubectl scale statefulset postgres minio redis -n teable --replicas=1
+
+# 3. 唤醒 Teable 主程序！
+kubectl scale deployment teable -n teable --replicas=1
+```
+
