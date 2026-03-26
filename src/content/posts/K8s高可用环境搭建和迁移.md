@@ -1,15 +1,12 @@
 ---
 title: K8s高可用环境搭建和迁移
-published: 2026-03-20
+published: 2026-03-26
 pinned: true
 description: K8s高可用环境搭建和迁移
 tags: [K8s]
 category: K8s
 author: Bunny
-draft: false
-date: 2026-03-26
 image: https://picture.whgd.eu.org/file/1774490256149.png
-pubDate: 2026-03-26
 ---
 
 ## 企业级别高可用Teable迁移方案
