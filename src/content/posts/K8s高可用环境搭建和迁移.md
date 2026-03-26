@@ -1,6 +1,6 @@
 ---
 title: K8s高可用环境搭建和迁移
-published: 2026-03-26
+published: 2026-03-20
 pinned: true
 description: K8s高可用环境搭建和迁移
 tags: [K8s]
@@ -852,7 +852,31 @@ spec:
     app: teable
 ```
 
-**2. 在 K8s Master 上应用配置：**
+**2.高可用HPA负载均衡搭建**
+
+```sh
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: teable-hpa
+  namespace: teable
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: teable    # 关联你 YAML 里的 teable Deployment
+  minReplicas: 1    # 闲时：最小保留 1 个 Pod（省资源）
+  maxReplicas: 3   # 忙时：最多扩容到 3 个 Pod
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60  # 当 CPU 使用率达到 requests(200m) 的 60% 时，触发扩容
+```
+
+**3. 在 K8s Master 上应用配置：**
 
 ```sh
 # 应用（创建或更新）配置文件
