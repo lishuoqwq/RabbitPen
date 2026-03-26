@@ -3,9 +3,8 @@ title: K8s高可用环境搭建和迁移
 published: 2026-03-26
 pinned: true
 description: K8s高可用环境搭建和迁移
-tags: [K8s高可用环境搭建和迁移]
-slug: K8s高可用环境搭建和迁移
-category: K8s高可用环境搭建和迁移
+tags: [K8s]
+category: K8s
 author: Bunny
 draft: false
 date: 2026-03-26
