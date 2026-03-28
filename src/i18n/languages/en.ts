@@ -15,7 +15,6 @@ export const en: Translation = {
 	[Key.other]: "Other",
 	[Key.all]: "All",
 
-	[Key.tags]: "Tags",
 	[Key.categories]: "Categories",
 	[Key.recentPosts]: "Recent Posts",
 	[Key.postList]: "Post List",
@@ -39,7 +38,6 @@ export const en: Translation = {
 		"Welcome to leave your mark here, share your thoughts and suggestions",
 	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
-	[Key.noTags]: "No Tags",
 
 	[Key.wordCount]: "word",
 	[Key.wordsCount]: "words",
@@ -211,7 +209,6 @@ export const en: Translation = {
 	[Key.siteStats]: "Site Statistics",
 	[Key.siteStatsPostCount]: "Posts",
 	[Key.siteStatsCategoryCount]: "Categories",
-	[Key.siteStatsTagCount]: "Tags",
 	[Key.siteStatsTotalWords]: "Total Words",
 	[Key.siteStatsRunningDays]: "Running Days",
 	[Key.siteStatsLastUpdate]: "Last Activity",

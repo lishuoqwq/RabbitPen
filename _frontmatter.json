@@ -42,11 +42,6 @@
           "isPreviewImage": true
         },
         {
-          "title": "tags",
-          "name": "tags",
-          "type": "list"
-        },
-        {
           "title": "category",
           "name": "category",
           "type": "string"

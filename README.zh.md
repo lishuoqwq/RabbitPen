@@ -78,7 +78,7 @@
 - [x] **留言板** - 支持留言页面
 - [x] **公告栏** - 支持侧边栏公告提示
 - [x] **看板娘** - 支持 Spine 和 Live2D 两种动画引擎
-- [x] **站点统计** - 显示文章、分类、标签数目、文章总字数等数据
+- [x] **站点统计** - 显示文章、分类数目、文章总字数等数据
 - [x] **站点日历** - 显示当月日历，以及当月的发布文章
 - [x] **赞助页面** - 赞助链接跳转、收款码展示、赞助者列表、文章内赞助按钮
 - [x] **分享海报** - 支持生成精美的文章分享海报
@@ -227,7 +227,6 @@ title: My First Blog Post
 published: 2023-09-09
 description: This is the first post of my new Astro blog.
 image: ./cover.jpg  # 或使用 "api" 来启用随机封面图
-tags: [Foo, Bar]
 category: Front-end
 draft: false
 lang: zh-CN      # 仅当文章语言与 `siteConfig.ts` 中的网站语言不同时需要设置

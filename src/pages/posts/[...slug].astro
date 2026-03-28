@@ -79,7 +79,6 @@ const jsonLd = {
 	"@type": "BlogPosting",
 	headline: entry.data.title,
 	description: entry.data.description || entry.data.title,
-	keywords: entry.data.tags,
 	author: {
 		"@type": "Person",
 		name: profileConfig.name,
@@ -175,7 +174,6 @@ const jsonLd = {
           className="mb-5"
           published={entry.data.published}
           updated={entry.data.updated}
-          tags={entry.data.tags}
           category={entry.data.category || undefined}
           id={entry.id}
         />

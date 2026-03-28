@@ -215,7 +215,6 @@ title: My First Blog Post
 published: 2023-09-09
 description: This is the first post of my new Astro blog.
 image: ./cover.jpg  # Или используйте "api" для включения случайных обложек
-tags: [Foo, Bar]
 category: Front-end
 draft: false
 lang: zh-CN      # Устанавливайте только если язык статьи отличается от языка сайта в `siteConfig.ts`

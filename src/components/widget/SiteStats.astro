@@ -7,7 +7,6 @@ import { i18n } from "@/i18n/translation";
 import {
 	getCategoryList,
 	getSortedPosts,
-	getTagList,
 } from "@/utils/content-utils";
 
 interface Props {
@@ -23,7 +22,6 @@ const siteStartDate = siteConfig.siteStartDate || "2025-01-01";
 // 获取所有文章
 const posts = await getSortedPosts();
 const categories = await getCategoryList();
-const tags = await getTagList();
 
 // 计算总字数
 let totalWords = 0;
@@ -71,11 +69,6 @@ const stats = [
 		icon: "material-symbols:folder-outline",
 		label: i18n(I18nKey.siteStatsCategoryCount),
 		value: categories.length,
-	},
-	{
-		icon: "material-symbols:label-outline",
-		label: i18n(I18nKey.siteStatsTagCount),
-		value: tags.length,
 	},
 	{
 		icon: "material-symbols:text-ad-outline-rounded",

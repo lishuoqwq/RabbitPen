@@ -4,10 +4,8 @@ import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import RandomCoverImage from "@/components/common/RandomCoverImage.astro";
 import PostMetadata from "@/components/layout/PostMeta.astro";
-import I18nKey from "@/i18n/i18nKey";
-import { i18n } from "@/i18n/translation";
 import { processCoverImageSync } from "@/utils/image-utils";
-import { getFileDirFromPath, getTagUrl } from "@/utils/url-utils";
+import { getFileDirFromPath } from "@/utils/url-utils";
 
 interface Props {
 	class?: string;
@@ -16,7 +14,6 @@ interface Props {
 	url: string;
 	published: Date;
 	updated?: Date;
-	tags: string[];
 	category: string | null;
 	image: string;
 	description: string;
@@ -30,7 +27,6 @@ const {
 	url,
 	published,
 	updated,
-	tags,
 	category,
 	image,
 	description,
@@ -107,9 +103,7 @@ const { remarkPluginFrontmatter } = await render(entry);
     <PostMetadata
       published={published}
       updated={updated}
-      tags={tags}
       category={category || undefined}
-      hideTagsForMobile={true}
       hideUpdateDate={true}
       words={remarkPluginFrontmatter.words}
       minutes={remarkPluginFrontmatter.minutes}
@@ -128,32 +122,6 @@ const { remarkPluginFrontmatter } = await render(entry);
       {description || remarkPluginFrontmatter.excerpt}
     </div>
 
-    <!-- tags -->
-    <div
-      class="text-sm text-black/30 dark:text-white/30 flex flex-wrap gap-2 transition stats mt-auto"
-    >
-      {
-        tags &&
-          tags.length > 0 &&
-          tags.map((tag, _i) => (
-            <a
-              href={getTagUrl(tag)}
-              aria-label={`View all posts with the ${tag.trim()} tag`}
-              class="btn-regular h-6 text-xs px-2 py-1 rounded-md 
-                    transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              #{tag.trim()}
-            </a>
-          ))
-      }
-      {
-        !(tags && tags.length > 0) && (
-          <span class="text-[var(--content-meta)] text-xs">
-            #{i18n(I18nKey.noTags)}
-          </span>
-        )
-      }
-    </div>
   </div>
 
   {

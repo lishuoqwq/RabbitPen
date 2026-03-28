@@ -15,7 +15,6 @@ export const zh_CN: Translation = {
 	[Key.other]: "其他",
 	[Key.all]: "全部",
 
-	[Key.tags]: "标签",
 	[Key.categories]: "分类",
 	[Key.recentPosts]: "最新文章",
 	[Key.postList]: "文章列表",
@@ -37,7 +36,6 @@ export const zh_CN: Translation = {
 	[Key.guestbookDescription]: "欢迎在这里留下你的足迹，分享你的想法和建议",
 	[Key.untitled]: "无标题",
 	[Key.uncategorized]: "未分类",
-	[Key.noTags]: "无标签",
 
 	[Key.wordCount]: "字",
 	[Key.wordsCount]: "字",
@@ -202,7 +200,6 @@ export const zh_CN: Translation = {
 	[Key.siteStats]: "站点统计",
 	[Key.siteStatsPostCount]: "文章",
 	[Key.siteStatsCategoryCount]: "分类",
-	[Key.siteStatsTagCount]: "标签",
 	[Key.siteStatsTotalWords]: "总字数",
 	[Key.siteStatsRunningDays]: "运行时长",
 	[Key.siteStatsLastUpdate]: "最后活动",

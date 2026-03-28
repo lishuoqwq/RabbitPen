@@ -15,7 +15,6 @@ export const ru: Translation = {
 	[Key.other]: "Прочее",
 	[Key.all]: "Все",
 
-	[Key.tags]: "Теги",
 	[Key.categories]: "Категории",
 	[Key.recentPosts]: "Последние посты",
 	[Key.postList]: "Список постов",
@@ -39,7 +38,6 @@ export const ru: Translation = {
 		"Добро пожаловать, оставьте свой след здесь, поделитесь своими мыслями и предложениями",
 	[Key.untitled]: "Без названия",
 	[Key.uncategorized]: "Без категории",
-	[Key.noTags]: "Нет тегов",
 
 	[Key.wordCount]: "слово",
 	[Key.wordsCount]: "слова",
@@ -212,7 +210,6 @@ export const ru: Translation = {
 	[Key.siteStats]: "Статистика сайта",
 	[Key.siteStatsPostCount]: "Статьи",
 	[Key.siteStatsCategoryCount]: "Категории",
-	[Key.siteStatsTagCount]: "Теги",
 	[Key.siteStatsTotalWords]: "Всего слов",
 	[Key.siteStatsRunningDays]: "Дней работы",
 	[Key.siteStatsLastUpdate]: "Последняя активность",

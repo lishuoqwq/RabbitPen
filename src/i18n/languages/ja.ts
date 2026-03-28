@@ -15,7 +15,6 @@ export const ja: Translation = {
 	[Key.other]: "その他",
 	[Key.all]: "すべて",
 
-	[Key.tags]: "タグ",
 	[Key.categories]: "カテゴリ",
 	[Key.recentPosts]: "最近の投稿",
 	[Key.postList]: "投稿リスト",
@@ -39,7 +38,6 @@ export const ja: Translation = {
 		"ここに足跡を残して、あなたの考えや提案を共有してください",
 	[Key.untitled]: "無題",
 	[Key.uncategorized]: "未分類",
-	[Key.noTags]: "タグなし",
 
 	[Key.wordCount]: "語",
 	[Key.wordsCount]: "語",
@@ -210,7 +208,6 @@ export const ja: Translation = {
 	[Key.siteStats]: "サイト統計",
 	[Key.siteStatsPostCount]: "記事",
 	[Key.siteStatsCategoryCount]: "カテゴリー",
-	[Key.siteStatsTagCount]: "タグ",
 	[Key.siteStatsTotalWords]: "総文字数",
 	[Key.siteStatsRunningDays]: "運用日数",
 	[Key.siteStatsLastUpdate]: "最終活動",

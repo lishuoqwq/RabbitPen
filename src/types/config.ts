@@ -225,7 +225,6 @@ export type BlogPostData = {
 	title: string;
 	published: Date;
 	description: string;
-	tags: string[];
 	draft?: boolean;
 	image?: string;
 	category?: string;
@@ -328,7 +327,6 @@ export type WidgetComponentType =
 	| "profile"
 	| "announcement"
 	| "categories"
-	| "tags"
 	| "sidebarToc"
 	| "advertisement"
 	| "stats"

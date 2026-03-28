@@ -214,7 +214,6 @@ title: My First Blog Post
 published: 2023-09-09
 description: This is the first post of my new Astro blog.
 image: ./cover.jpg  # 或使用 "api" 來啟用隨機封面圖
-tags: [Foo, Bar]
 category: Front-end
 draft: false
 lang: zh-CN      # 僅當文章語言與 `siteConfig.ts` 中的網站語言不同時需要設定

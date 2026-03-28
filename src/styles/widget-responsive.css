@@ -88,8 +88,7 @@
     order: -1; /* 公告优先显示 */
   }
   
-  .widget-container[data-widget-type="categories"],
-  .widget-container[data-widget-type="tags"] {
+  .widget-container[data-widget-type="categories"] {
     /* 分类和标签在移动端可折叠 */
     max-height: 120px;
     overflow-y: auto;
@@ -200,26 +199,22 @@
 }
 
 /* Categories 和 Tags 组件 */
-.widget-container[data-widget-type="categories"],
-.widget-container[data-widget-type="tags"] {
+.widget-container[data-widget-type="categories"] {
   /* 分类和标签组件支持滚动 */
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
-.widget-container[data-widget-type="categories"]::-webkit-scrollbar,
-.widget-container[data-widget-type="tags"]::-webkit-scrollbar {
+.widget-container[data-widget-type="categories"]::-webkit-scrollbar {
   width: 4px;
 }
 
-.widget-container[data-widget-type="categories"]::-webkit-scrollbar-track,
-.widget-container[data-widget-type="tags"]::-webkit-scrollbar-track {
+.widget-container[data-widget-type="categories"]::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.widget-container[data-widget-type="categories"]::-webkit-scrollbar-thumb,
-.widget-container[data-widget-type="tags"]::-webkit-scrollbar-thumb {
+.widget-container[data-widget-type="categories"]::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 2px;
 }
@@ -437,8 +432,7 @@
       font-size: 0.875rem;
     }
     
-    .widget-container[data-widget-type="categories"],
-    .widget-container[data-widget-type="tags"] {
+    .widget-container[data-widget-type="categories"] {
       max-height: 150px;
     }
   }

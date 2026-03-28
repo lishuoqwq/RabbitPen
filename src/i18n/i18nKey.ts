@@ -11,7 +11,6 @@ enum I18nKey {
 	searchViewMore = "searchViewMore",
 	other = "other",
 
-	tags = "tags",
 	categories = "categories",
 	recentPosts = "recentPosts",
 	postList = "postList",
@@ -29,7 +28,6 @@ enum I18nKey {
 
 	untitled = "untitled",
 	uncategorized = "uncategorized",
-	noTags = "noTags",
 
 	wordCount = "wordCount",
 	wordsCount = "wordsCount",
@@ -196,7 +194,6 @@ enum I18nKey {
 	siteStats = "siteStats",
 	siteStatsPostCount = "siteStatsPostCount",
 	siteStatsCategoryCount = "siteStatsCategoryCount",
-	siteStatsTagCount = "siteStatsTagCount",
 	siteStatsTotalWords = "siteStatsTotalWords",
 	siteStatsRunningDays = "siteStatsRunningDays",
 	siteStatsLastUpdate = "siteStatsLastUpdate",

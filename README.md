@@ -75,7 +75,7 @@
 - [x] **Guestbook** - Supports guestbook page
 - [x] **Announcement Bar** - Supports sidebar announcement notification
 - [x] **Mascot** - Supports both Spine and Live2D animation engines
-- [x] **Site Statistics** - Displays article, category, tag counts, total word count, etc.
+- [x] **Site Statistics** - Displays article and category counts, total word count, etc.
 - [x] **Site Calendar** - Displays current month calendar and published articles for the month
 - [x] **Sponsor Page** - Sponsor link redirection, payment QR codes display, sponsor list, in-article sponsor button
 - [x] **Share Poster** - Supports generating beautiful article share posters
@@ -224,7 +224,6 @@ title: My First Blog Post
 published: 2023-09-09
 description: This is the first post of my new Astro blog.
 image: ./cover.jpg  # Or use "api" to enable random cover images
-tags: [Foo, Bar]
 category: Front-end
 draft: false
 lang: zh-CN      # Only set when article language differs from site language in `siteConfig.ts`

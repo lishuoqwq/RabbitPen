@@ -48,7 +48,6 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 - `FloatingButton.astro` - 悬浮按钮基础组件
 - `Icon.astro` - 图标组件（带加载状态和错误处理）
 - `ButtonLink.astro` - 链接按钮
-- `ButtonTag.astro` - 标签按钮
 - `WidgetLayout.astro` - 小部件布局容器
 
 **内容和展示组件**
@@ -71,7 +70,6 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 - `Categories.astro` - 分类组件
 - `SidebarTOC.astro` - 侧边栏目录组件
 - `SiteStats.astro` - 站点统计组件
-- `Tags.astro` - 标签组件
 
 ### ✨ features/ - 全局功能特效组件
 
