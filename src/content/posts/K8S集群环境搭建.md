@@ -3,7 +3,6 @@ title: K8s 高可用集群搭建
 published: 2026-03-20
 pinned: true
 description: K8s 高可用集群搭建
-tags: [k8s,集群,分布式,HPA]
 category: Linux
 author: Bunny
 draft: false
