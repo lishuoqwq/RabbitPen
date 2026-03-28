@@ -5,7 +5,6 @@ pinned: true
 description: Linux系统中一些常用命令整理
 tags: [Linux]
 slug: Linux
-category: Linux
 author: Bunny
 draft: false
 date: 2025-01-20
