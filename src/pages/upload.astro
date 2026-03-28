@@ -1,10 +1,5 @@
 ---
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
-
-const repoOwner = import.meta.env.PUBLIC_GITHUB_OWNER ?? "lishuoqwq";
-const repoName = import.meta.env.PUBLIC_GITHUB_REPO ?? "RabbitPen";
-const repoBranch = import.meta.env.PUBLIC_GITHUB_BRANCH ?? "main";
-const repoPath = import.meta.env.PUBLIC_GITHUB_BASE_PATH ?? "src/content/posts";
 ---
 
 <MainGridLayout title="上传文章" description="上传 Markdown 并推送到 GitHub 仓库">
@@ -18,162 +13,223 @@ const repoPath = import.meta.env.PUBLIC_GITHUB_BASE_PATH ?? "src/content/posts";
 		</section>
 
 		<div class="upload-grid">
-			<section class="card-base upload-form-card">
-				<h2 class="upload-section-title">选择文件并提交</h2>
-				<form id="upload-form" class="flex flex-col gap-6" enctype="multipart/form-data">
-					<div class="upload-fields-grid">
-						<label class="upload-field">
-							<span class="upload-label">Markdown 文件</span>
-							<span class="file-field">
+			<md-uploader>
+				<section class="card-base upload-form-card">
+					<h2 class="upload-section-title">选择文件并提交</h2>
+					<form id="upload-form" class="flex flex-col gap-6" enctype="multipart/form-data">
+						<div class="upload-fields-grid">
+							<label class="upload-field">
+								<span class="upload-label">Markdown 文件</span>
+								<span class="file-field">
+									<input
+										id="md-file"
+										name="file"
+										type="file"
+										accept=".md,.mdx"
+										class="file-input"
+										required
+									/>
+									<span class="file-button">选择文件</span>
+									<span class="file-name" data-file-name>未选择任何文件</span>
+								</span>
+							</label>
+
+							<label class="upload-field">
+								<span class="upload-label">上传口令</span>
 								<input
-									id="md-file"
-									name="file"
-									type="file"
-									accept=".md,.mdx"
-									class="file-input"
-									required
+									id="upload-password"
+									name="password"
+									type="password"
+									placeholder="如果后端配置了口令，请在此输入"
+									class="upload-input"
 								/>
-								<span class="file-button">选择文件</span>
-								<span class="file-name" data-file-name>未选择任何文件</span>
-							</span>
-						</label>
+							</label>
 
-						<label class="upload-field">
-							<span class="upload-label">上传口令</span>
-							<input
-								id="upload-password"
-								name="password"
-								type="password"
-								placeholder="如果后端配置了口令，请在此输入"
-								class="upload-input"
-							/>
-						</label>
+							<label class="upload-field">
+								<span class="upload-label">目标文件名</span>
+								<input
+									id="md-filename"
+									name="filename"
+									type="text"
+									placeholder="例如：我的新文章.md"
+									class="upload-input"
+								/>
+							</label>
 
-						<label class="upload-field">
-							<span class="upload-label">目标文件名</span>
-							<input
-								id="md-filename"
-								name="filename"
-								type="text"
-								placeholder="例如：我的新文章.md"
-								class="upload-input"
-							/>
-						</label>
+							<label class="upload-field">
+								<span class="upload-label">提交信息</span>
+								<input
+									id="commit-message"
+									name="message"
+									type="text"
+									placeholder="例如：chore: 更新文章"
+									class="upload-input"
+								/>
+							</label>
+						</div>
 
-						<label class="upload-field">
-							<span class="upload-label">提交信息</span>
-							<input
-								id="commit-message"
-								name="message"
-								type="text"
-								placeholder="例如：chore: 更新文章"
-								class="upload-input"
-							/>
-						</label>
-					</div>
+						<div class="upload-actions">
+							<button
+								type="submit"
+								class="btn-regular upload-submit"
+								id="upload-submit"
+							>
+								开始上传
+							</button>
+							<span id="upload-status" class="upload-status"></span>
+						</div>
+					</form>
 
-					<div class="upload-actions">
-						<button
-							type="submit"
-							class="btn-regular upload-submit"
-							id="upload-submit"
-						>
-							开始上传
-						</button>
-						<span id="upload-status" class="upload-status"></span>
-					</div>
-				</form>
-
-				<div id="upload-result" class="upload-result"></div>
-			</section>
+					<div id="upload-result" class="upload-result"></div>
+				</section>
+			</md-uploader>
 		</div>
 	</div>
 </MainGridLayout>
 
-<script>
-	const form = document.getElementById("upload-form");
-	const statusEl = document.getElementById("upload-status");
-	const resultEl = document.getElementById("upload-result");
-	const submitBtn = document.getElementById("upload-submit");
-	const fileInput = document.getElementById("md-file");
-	const fileNameEl = document.querySelector("[data-file-name]");
+<script slot="head" is:inline define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
+	if (!customElements.get("md-uploader")) {
+		class MarkdownUploader extends HTMLElement {
+			_abortController;
+			_isUploading = false;
 
-	const setStatus = (message, tone = "info") => {
-		if (!statusEl) return;
-		statusEl.textContent = message;
-		statusEl.className =
-			tone === "error"
-				? "upload-status is-error"
-				: tone === "success"
-					? "upload-status is-success"
-					: "upload-status";
-	};
-
-	form?.addEventListener("submit", async (event) => {
-		event.preventDefault();
-		if (!(form instanceof HTMLFormElement)) return;
-
-		if (!(fileInput instanceof HTMLInputElement) || !fileInput.files?.length) {
-			setStatus("请先选择 Markdown 文件。", "error");
-			return;
-		}
-
-		const formData = new FormData();
-		formData.append("file", fileInput.files[0]);
-
-		const filename = document.getElementById("md-filename");
-		if (filename instanceof HTMLInputElement && filename.value.trim()) {
-			formData.append("filename", filename.value.trim());
-		}
-
-		const message = document.getElementById("commit-message");
-		if (message instanceof HTMLInputElement && message.value.trim()) {
-			formData.append("message", message.value.trim());
-		}
-
-		const password = document.getElementById("upload-password");
-		if (password instanceof HTMLInputElement && password.value.trim()) {
-			formData.append("password", password.value.trim());
-		}
-
-		try {
-			setStatus("正在上传，请稍候...");
-			if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
-			if (resultEl) resultEl.textContent = "";
-
-			const response = await fetch("/api/upload/", {
-				method: "POST",
-				body: formData,
-			});
-
-			const payload = await response.json();
-			if (!response.ok) {
-				throw new Error(payload?.message || "上传失败");
+			connectedCallback() {
+				this.mount();
 			}
 
-			setStatus("上传成功。", "success");
-			if (resultEl) {
-				resultEl.textContent = `已写入 ${payload.path}，提交：${payload.commitSha ?? "未知"}`;
+			disconnectedCallback() {
+				this.unmount();
 			}
-			form.reset();
-			if (fileNameEl) {
-				fileNameEl.textContent = "未选择任何文件";
-			}
-		} catch (error) {
-			setStatus(error instanceof Error ? error.message : "上传失败", "error");
-		} finally {
-			if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
-		}
-	});
 
-	if (fileInput instanceof HTMLInputElement && fileNameEl) {
-		fileInput.addEventListener("change", () => {
-			const fileName =
-				fileInput.files && fileInput.files.length > 0
-					? fileInput.files[0].name
-					: "未选择任何文件";
-			fileNameEl.textContent = fileName;
-		});
+			unmount() {
+				if (this._abortController) {
+					this._abortController.abort();
+				}
+				this._abortController = undefined;
+				this._isUploading = false;
+			}
+
+			mount() {
+				this.unmount();
+				const controller = new AbortController();
+				this._abortController = controller;
+
+				const form = this.querySelector("#upload-form");
+				const statusEl = this.querySelector("#upload-status");
+				const resultEl = this.querySelector("#upload-result");
+				const submitBtn = this.querySelector("#upload-submit");
+				const fileInput = this.querySelector("#md-file");
+				const fileNameEl = this.querySelector("[data-file-name]");
+
+				if (!(form instanceof HTMLFormElement)) return;
+				if (!(statusEl instanceof HTMLElement)) return;
+				if (!(submitBtn instanceof HTMLButtonElement)) return;
+				if (!(fileInput instanceof HTMLInputElement)) return;
+				if (!(fileNameEl instanceof HTMLElement)) return;
+
+				/** @param {string} message @param {"info"|"error"|"success"} tone */
+				const setStatus = (message, tone = "info") => {
+					statusEl.textContent = message;
+					statusEl.className =
+						tone === "error"
+							? "upload-status is-error"
+							: tone === "success"
+								? "upload-status is-success"
+								: "upload-status";
+				};
+
+				const normalizedBaseUrl = String(baseUrl || "/").replace(/\/?$/, "/");
+				const endpoint = new URL(`${normalizedBaseUrl}api/upload/`, window.location.origin);
+
+				fileInput.addEventListener(
+					"change",
+					() => {
+						const fileName =
+							fileInput.files && fileInput.files.length > 0
+								? fileInput.files[0].name
+								: "未选择任何文件";
+						fileNameEl.textContent = fileName;
+					},
+					{ signal: controller.signal },
+				);
+
+				form.addEventListener(
+					"submit",
+					async (event) => {
+						event.preventDefault();
+						if (this._isUploading) return;
+						this._isUploading = true;
+
+						try {
+							if (!fileInput.files?.length) {
+								setStatus("请先选择 Markdown 文件。", "error");
+								return;
+							}
+
+							const formData = new FormData();
+							formData.append("file", fileInput.files[0]);
+
+							const filename = this.querySelector("#md-filename");
+							if (filename instanceof HTMLInputElement && filename.value.trim()) {
+								formData.append("filename", filename.value.trim());
+							}
+
+							const message = this.querySelector("#commit-message");
+							if (message instanceof HTMLInputElement && message.value.trim()) {
+								formData.append("message", message.value.trim());
+							}
+
+							const password = this.querySelector("#upload-password");
+							if (password instanceof HTMLInputElement && password.value.trim()) {
+								formData.append("password", password.value.trim());
+							}
+
+							setStatus("正在上传，请稍候...");
+							submitBtn.disabled = true;
+							if (resultEl instanceof HTMLElement) resultEl.textContent = "";
+
+							const response = await fetch(endpoint.toString(), {
+								method: "POST",
+								body: formData,
+							});
+
+							const contentType = response.headers.get("content-type") || "";
+							const payload = contentType.includes("application/json")
+								? await response.json().catch(() => null)
+								: await response.text().catch(() => "");
+
+							if (!response.ok) {
+								const message =
+									typeof payload === "object" && payload
+										? payload.message || "上传失败"
+										: "上传失败";
+								throw new Error(message);
+							}
+
+							setStatus("上传成功。", "success");
+							if (resultEl instanceof HTMLElement && payload && typeof payload === "object") {
+								resultEl.textContent = `已写入 ${payload.path}，提交：${payload.commitSha ?? "未知"}`;
+							}
+
+							form.reset();
+							fileInput.value = "";
+							fileNameEl.textContent = "未选择任何文件";
+						} catch (error) {
+							setStatus(
+								error instanceof Error ? error.message : "上传失败",
+								"error",
+							);
+						} finally {
+							submitBtn.disabled = false;
+							this._isUploading = false;
+						}
+					},
+					{ signal: controller.signal },
+				);
+			}
+		}
+
+		customElements.define("md-uploader", MarkdownUploader);
 	}
 </script>
 

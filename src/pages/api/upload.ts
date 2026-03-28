@@ -6,8 +6,11 @@ const DEFAULT_REPO = "RabbitPen";
 const DEFAULT_BRANCH = "main";
 const DEFAULT_BASE_PATH = "src/content/posts";
 
-const getEnvValue = (key: string, fallback?: string) =>
-	(import.meta.env[key] as string | undefined) ?? fallback;
+function getEnvValue(key: string): string | undefined;
+function getEnvValue(key: string, fallback: string): string;
+function getEnvValue(key: string, fallback?: string) {
+	return (import.meta.env[key] as string | undefined) ?? fallback;
+}
 
 const sanitizeRelativePath = (input: string) => {
 	const normalized = input.replace(/\\/g, "/").replace(/^\/+/, "");
