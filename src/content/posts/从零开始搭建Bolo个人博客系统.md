@@ -3,7 +3,6 @@ title: 从零开始搭建Bolo个人博客系统
 published: 2025-07-13
 pinned: true
 description: 记录一次从零开始搭建Bolo个人博客系统
-tags: [website]
 category: Linux
 author: Bunny
 draft: false
