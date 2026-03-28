@@ -3,8 +3,8 @@ title: K8s 高可用集群搭建
 published: 2026-03-20
 pinned: true
 description: K8s 高可用集群搭建
-tags: [集群搭建,高可用]
-category: k8s
+tags: [k8s,集群搭建,高可用]
+category: Linux
 author: Bunny
 draft: false
 date: 2026-03-20
