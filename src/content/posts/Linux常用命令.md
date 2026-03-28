@@ -3,7 +3,7 @@ title: Linux常用命令
 published: 2025-02-17
 pinned: true
 description: Linux系统中一些常用命令整理
-tags: [Linux]
+tags: [Ubuntu]
 slug: Linux
 author: Bunny
 draft: false
