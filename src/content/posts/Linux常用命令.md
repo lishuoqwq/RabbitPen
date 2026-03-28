@@ -3,12 +3,9 @@ title: Linux常用命令
 published: 2025-02-17
 pinned: true
 description: Linux系统中一些常用命令整理
-slug: Linux
+category: Linux
 author: Bunny
-draft: false
-date: 2025-01-20
 image: https://picture.whgd.eu.org/file/1737613131026_【哲风壁纸】笑嘻嘻-美女.png
-pubDate: 2025-01-20
 ---
 
 ## Ubuntu Server如何设置静态IP
