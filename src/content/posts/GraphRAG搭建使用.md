@@ -3,12 +3,9 @@ title: GraphRAG搭建使用
 published: 2024-07-30
 pinned: true
 description: GraphRAG的搭建和训练
-category: AI
+category: Linux
 author: Bunny
-draft: false
-date: 2025-01-20
 image: https://picture.whgd.eu.org/file/1738589472975_【哲风壁纸】动物-可爱-围栏.png
-pubDate: 2026-01-30
 ---
 
 ##### 1、本地安装Ollama，下载两个模型
