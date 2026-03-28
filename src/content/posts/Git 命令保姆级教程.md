@@ -5,7 +5,6 @@ pinned: true
 description: 从零开始学习 Git，涵盖安装、配置、常用命令、分支管理、远程操作等全面内容
 category: Linux
 author: Bunny
-draft: false
 image: https://picture.whgd.eu.org/file/1770209822177_【哲风壁纸】8k-二次元-动漫.png
 ---
 
