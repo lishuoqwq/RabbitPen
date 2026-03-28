@@ -3,8 +3,8 @@ title: 使用Rsync进行Linux同步到Windows Server2019服务器备份
 published: 2025-04-17
 pinned: true
 description: 记录一次Rsync异地备份的过程
-tags: [Linux,Windows,备份]
-category: backup
+tags: [backup,Windows,备份]
+category: Linux
 author: Bunny
 draft: false
 date: 2025-01-30
