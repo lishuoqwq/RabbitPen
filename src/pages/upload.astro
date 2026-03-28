@@ -90,11 +90,13 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 <script slot="head" is:inline define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
 	if (!customElements.get("md-uploader")) {
 		class MarkdownUploader extends HTMLElement {
-			_abortController;
 			_isUploading = false;
+			_cleanup = [];
+			_mountAttempt = 0;
 
 			connectedCallback() {
-				this.mount();
+				this._mountAttempt = 0;
+				this.scheduleMount();
 			}
 
 			disconnectedCallback() {
@@ -102,18 +104,26 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 			}
 
 			unmount() {
-				if (this._abortController) {
-					this._abortController.abort();
-				}
-				this._abortController = undefined;
+				for (const cleanup of this._cleanup) cleanup();
+				this._cleanup = [];
 				this._isUploading = false;
+			}
+
+			scheduleMount() {
+				// 自定义元素可能在 HTML 解析过程中提前触发 connectedCallback，导致子元素尚未就绪。
+				// 用 rAF 等待一帧，确保内部 DOM 已经插入，再绑定事件。
+				requestAnimationFrame(() => {
+					if (!this.isConnected) return;
+					const mounted = this.mount();
+					if (!mounted && this._mountAttempt < 10) {
+						this._mountAttempt += 1;
+						this.scheduleMount();
+					}
+				});
 			}
 
 			mount() {
 				this.unmount();
-				const controller = new AbortController();
-				this._abortController = controller;
-
 				const form = this.querySelector("#upload-form");
 				const statusEl = this.querySelector("#upload-status");
 				const resultEl = this.querySelector("#upload-result");
@@ -121,11 +131,11 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 				const fileInput = this.querySelector("#md-file");
 				const fileNameEl = this.querySelector("[data-file-name]");
 
-				if (!(form instanceof HTMLFormElement)) return;
-				if (!(statusEl instanceof HTMLElement)) return;
-				if (!(submitBtn instanceof HTMLButtonElement)) return;
-				if (!(fileInput instanceof HTMLInputElement)) return;
-				if (!(fileNameEl instanceof HTMLElement)) return;
+				if (!(form instanceof HTMLFormElement)) return false;
+				if (!(statusEl instanceof HTMLElement)) return false;
+				if (!(submitBtn instanceof HTMLButtonElement)) return false;
+				if (!(fileInput instanceof HTMLInputElement)) return false;
+				if (!(fileNameEl instanceof HTMLElement)) return false;
 
 				/** @param {string} message @param {"info"|"error"|"success"} tone */
 				const setStatus = (message, tone = "info") => {
@@ -141,91 +151,96 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 				const normalizedBaseUrl = String(baseUrl || "/").replace(/\/?$/, "/");
 				const endpoint = new URL(`${normalizedBaseUrl}api/upload/`, window.location.origin);
 
-				fileInput.addEventListener(
-					"change",
-					() => {
-						const fileName =
-							fileInput.files && fileInput.files.length > 0
-								? fileInput.files[0].name
-								: "未选择任何文件";
-						fileNameEl.textContent = fileName;
-					},
-					{ signal: controller.signal },
-				);
+				const updateFileName = () => {
+					const fileName =
+						fileInput.files && fileInput.files.length > 0
+							? fileInput.files[0].name
+							: "未选择任何文件";
+					fileNameEl.textContent = fileName;
+				};
 
-				form.addEventListener(
-					"submit",
-					async (event) => {
-						event.preventDefault();
-						if (this._isUploading) return;
-						this._isUploading = true;
+				// 初次进入页面（包含 bfcache / Swup）时同步一次 UI
+				updateFileName();
 
-						try {
-							if (!fileInput.files?.length) {
-								setStatus("请先选择 Markdown 文件。", "error");
-								return;
-							}
+				const onFileChange = () => {
+					updateFileName();
+				};
+				fileInput.addEventListener("change", onFileChange);
+				this._cleanup.push(() => fileInput.removeEventListener("change", onFileChange));
 
-							const formData = new FormData();
-							formData.append("file", fileInput.files[0]);
+				const onSubmit = async (event) => {
+					event.preventDefault();
+					if (this._isUploading) return;
+					this._isUploading = true;
 
-							const filename = this.querySelector("#md-filename");
-							if (filename instanceof HTMLInputElement && filename.value.trim()) {
-								formData.append("filename", filename.value.trim());
-							}
+					try {
+						// 兜底：即便 change 没触发，也在提交时同步一次文件名 UI
+						updateFileName();
 
-							const message = this.querySelector("#commit-message");
-							if (message instanceof HTMLInputElement && message.value.trim()) {
-								formData.append("message", message.value.trim());
-							}
-
-							const password = this.querySelector("#upload-password");
-							if (password instanceof HTMLInputElement && password.value.trim()) {
-								formData.append("password", password.value.trim());
-							}
-
-							setStatus("正在上传，请稍候...");
-							submitBtn.disabled = true;
-							if (resultEl instanceof HTMLElement) resultEl.textContent = "";
-
-							const response = await fetch(endpoint.toString(), {
-								method: "POST",
-								body: formData,
-							});
-
-							const contentType = response.headers.get("content-type") || "";
-							const payload = contentType.includes("application/json")
-								? await response.json().catch(() => null)
-								: await response.text().catch(() => "");
-
-							if (!response.ok) {
-								const message =
-									typeof payload === "object" && payload
-										? payload.message || "上传失败"
-										: "上传失败";
-								throw new Error(message);
-							}
-
-							setStatus("上传成功。", "success");
-							if (resultEl instanceof HTMLElement && payload && typeof payload === "object") {
-								resultEl.textContent = `已写入 ${payload.path}，提交：${payload.commitSha ?? "未知"}`;
-							}
-
-							form.reset();
-							fileInput.value = "";
-							fileNameEl.textContent = "未选择任何文件";
-						} catch (error) {
-							setStatus(
-								error instanceof Error ? error.message : "上传失败",
-								"error",
-							);
-						} finally {
-							submitBtn.disabled = false;
-							this._isUploading = false;
+						if (!fileInput.files?.length) {
+							setStatus("请先选择 Markdown 文件。", "error");
+							return;
 						}
-					},
-					{ signal: controller.signal },
-				);
+
+						const formData = new FormData();
+						formData.append("file", fileInput.files[0]);
+
+						const filename = this.querySelector("#md-filename");
+						if (filename instanceof HTMLInputElement && filename.value.trim()) {
+							formData.append("filename", filename.value.trim());
+						}
+
+						const message = this.querySelector("#commit-message");
+						if (message instanceof HTMLInputElement && message.value.trim()) {
+							formData.append("message", message.value.trim());
+						}
+
+						const password = this.querySelector("#upload-password");
+						if (password instanceof HTMLInputElement && password.value.trim()) {
+							formData.append("password", password.value.trim());
+						}
+
+						setStatus("正在上传，请稍候...");
+						submitBtn.disabled = true;
+						if (resultEl instanceof HTMLElement) resultEl.textContent = "";
+
+						const response = await fetch(endpoint.toString(), {
+							method: "POST",
+							body: formData,
+						});
+
+						const contentType = response.headers.get("content-type") || "";
+						const payload = contentType.includes("application/json")
+							? await response.json().catch(() => null)
+							: await response.text().catch(() => "");
+
+						if (!response.ok) {
+							const message =
+								typeof payload === "object" && payload
+									? payload.message || "上传失败"
+									: "上传失败";
+							throw new Error(message);
+						}
+
+						setStatus("上传成功。", "success");
+						if (resultEl instanceof HTMLElement && payload && typeof payload === "object") {
+							resultEl.textContent = `已写入 ${payload.path}，提交：${payload.commitSha ?? "未知"}`;
+						}
+
+						form.reset();
+						fileInput.value = "";
+						updateFileName();
+					} catch (error) {
+						setStatus(error instanceof Error ? error.message : "上传失败", "error");
+					} finally {
+						submitBtn.disabled = false;
+						this._isUploading = false;
+					}
+				};
+
+				form.addEventListener("submit", onSubmit);
+				this._cleanup.push(() => form.removeEventListener("submit", onSubmit));
+				return true;
 			}
 		}
 
