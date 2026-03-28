@@ -3,7 +3,6 @@ title: K8s高可用环境搭建和迁移
 published: 2026-03-26
 pinned: true
 description: K8s高可用环境搭建和迁移
-tags: [k8s,系统架构升级]
 category: Linux
 author: Bunny
 image: https://picture.whgd.eu.org/file/1774490256149.png
