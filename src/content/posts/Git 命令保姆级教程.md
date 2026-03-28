@@ -4,7 +4,7 @@ published: 2026-02-04
 pinned: true
 description: 从零开始学习 Git，涵盖安装、配置、常用命令、分支管理、远程操作等全面内容
 tags: [Git]
-slug: Git
+slug: VibeCoding
 category: 开发教程
 author: Bunny
 draft: false
