@@ -3,7 +3,6 @@ title: GraphRAG搭建使用
 published: 2024-07-30
 pinned: true
 description: GraphRAG的搭建和训练
-tags: [GraphRAG,向量数据库]
 category: AI
 author: Bunny
 draft: false
