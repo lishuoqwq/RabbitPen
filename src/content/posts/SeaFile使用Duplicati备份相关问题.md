@@ -3,7 +3,6 @@ title: SeaFile使用Duplicati备份
 published: 2025-05-30
 pinned: true
 description: 记录一次解决SeaFile使用Duplicati备份的过程
-tags: [backup,Seafile]
 category: Linux
 author: Bunny
 draft: false
