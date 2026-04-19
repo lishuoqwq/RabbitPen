@@ -65,18 +65,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				external: true,
 				icon: "material-symbols:apps",
 			},
-			{
-				name: "MoonTV",
-				url: "https://moontv.whgd.eu.org/",
-				external: true,
-				icon: "material-symbols:tv-outline",
-			},
-			{
-				name: "订阅转换",
-				url: "https://sublink.whgd.eu.org/",
-				external: true,
-				icon: "material-symbols:sync-alt",
-			},
 		],
 	});
 
