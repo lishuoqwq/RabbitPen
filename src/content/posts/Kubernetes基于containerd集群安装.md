@@ -1,6 +1,6 @@
 ---
 title: Kubernetes基于containerd集群安装
-published: 2026-02-04
+published: 2026-03-21
 pinned: true
 description: Kubernetes基于containerd集群安装标准化操作流程
 category: Linux
