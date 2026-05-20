@@ -1,6 +1,6 @@
 ---
 title: Kubernetes 集群安装 SOP（CentOS版本）
-published: 2026-02-04
+published: 2026-05-20
 pinned: true
 description: Kubernetes 集群安装 SOP（CentOS版本）
 category: Linux
