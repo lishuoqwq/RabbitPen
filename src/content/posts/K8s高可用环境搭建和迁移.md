@@ -1,6 +1,6 @@
 ---
 title: K8s高可用环境搭建和迁移
-published: 2026-03-26
+published: 2026-03-16
 pinned: true
 description: K8s高可用环境搭建和迁移
 category: Linux
