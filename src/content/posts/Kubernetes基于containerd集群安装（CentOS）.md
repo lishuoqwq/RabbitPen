@@ -4,8 +4,8 @@ published: 2026-05-20
 pinned: true
 description: Kubernetes基于containerd集群安装标准化操作流程
 category: Linux
-author: Bunny
-image: https://picture.whgd.eu.org/file/1779264489816.png
+author: Bunn
+image: https://picture.whgd.eu.org/file/1738589472975_【哲风壁纸】动物-可爱-围栏.png
 ---
 
 # Kubernetes 集群安装 SOP（基于 containerd）
